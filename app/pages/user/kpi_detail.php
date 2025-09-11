@@ -40,7 +40,7 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
     <h1 class="text-2xl font-bold mb-2"><?= htmlspecialchars($assignment['nama']) ?></h1>
     <p class="text-gray-600">Periode: <?= htmlspecialchars($assignment['periode']) ?></p>
     <p class="text-gray-500 mb-4"><?= htmlspecialchars($assignment['deskripsi']) ?></p>
-
+    <p class="text-l mb-6">(CAN ONLY BE FILLED ONCE)</p>
     <form action="save" method="post" enctype="multipart/form-data" class="space-y-4">
         <input type="hidden" name="assignment_id" value="<?= $assignment['assignment_id'] ?>">
 
