@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /kpi-app/public/
+
+# kalau file/folder ada → langsung akses
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# route semua request ke index.php
+RewriteRule ^(.*)$ index.php?page=$1 [L,QSA]

@@ -1,0 +1,122 @@
+<?php
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../core/auth.php';
+
+// Hanya admin yang boleh akses
+checkRole(['admin']);
+
+// CREATE
+if (isset($_POST['add_user'])) {
+    $name = $_POST['nama'];
+    $email = $_POST['email'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = $_POST['role'];
+    $departemen_id = $_POST['departemen_id'];
+
+    $sql = "INSERT INTO users (nama, email, password, role, departemen_id) 
+        VALUES (?, ?, ?, ?, ?)";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute([$name, $email, $password, $role, $departemen_id]);
+    
+    header("Location: users");
+    exit;
+}
+
+// DELETE
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    header("Location: users");
+    exit;
+}
+
+// READ departemen
+$departemen = $pdo->query("SELECT * FROM departments");
+
+// READ users
+$users = $pdo->query("SELECT u.*, d.name AS departemen FROM users u LEFT JOIN departments d ON u.departemen_id=d.id");
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen User</title>
+  <link rel="stylesheet" href="/kpi-app/src/output.css">
+</head>
+<body class="bg-gray-100 p-6">
+	 <h1 class="text-2xl font-bold mb-4">Manajemen User</h1>
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow">  
+
+    <!-- Form Tambah User -->
+  <form method="POST" class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" name="nama" placeholder="Nama" required
+             class="p-2 border rounded w-full">
+      <input type="email" name="email" placeholder="Email" required
+             class="p-2 border rounded w-full">
+      <input type="password" name="password" placeholder="Password" required
+             class="p-2 border rounded w-full">
+
+      <select name="role" class="p-2 border rounded w-full" required>
+        <option value="">-- Pilih Role --</option>
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+        <option value="user">User</option>
+      </select>
+
+      <select name="departemen_id" class="p-2 border rounded w-full" required>
+        <option value="">-- Pilih Departemen --</option>
+        <?php while($d = $departemen->fetch(PDO::FETCH_ASSOC)): ?>
+          <option value="<?= $d['id']; ?>"><?= $d['name']; ?></option>
+        <?php endwhile; ?>
+      </select>
+
+      <button type="submit" name="add_user" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Tambah
+        </button>
+  </form>
+
+    <!-- Tabel User -->
+    <div class="overflow-x-auto">
+    <table class="w-full border text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="border p-2">Nama</th>
+          <th class="border p-2">Email</th>
+          <th class="border p-2">Role</th>
+          <th class="border p-2">Departemen</th>
+          <th class="border p-2">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php while($u = $users->fetch(PDO::FETCH_ASSOC)): ?>
+        <tr>
+          <td class="border p-2"><?= $u['nama']; ?></td>
+          <td class="border p-2"><?= $u['email']; ?></td>
+          <td class="border p-2"><?= ucfirst($u['role']); ?></td>
+          <td class="border p-2"><?= $u['departemen'] ?: '-'; ?></td>
+          <td class="border p-2">
+            <a href="users&delete=<?= $u['id']; ?>" 
+               onclick="return confirm('Hapus user ini?')"
+               class="bg-red-500 text-white px-2 py-1 rounded">
+              Hapus
+            </a>
+          </td>
+        </tr>
+        <?php endwhile; ?>
+      </tbody>
+    </table>
+	</div>
+
+        <!-- Tombol kembali -->
+    <div class="mt-4">
+        <a href="../dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            ⬅ Kembali ke Dashboard
+        </a>
+    </div>
+
+  </div>
+</body>
+</html>
