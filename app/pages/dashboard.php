@@ -82,11 +82,11 @@ $role = $user['role'];
     <!-- MENU ADMIN -->
     <?php if ($role === 'admin'): ?>
         <div class="mt-6 space-x-2">
-            <a href="/kpi-app/public/admin/departments"
+            <a href="/kpi-app/public/departments"
                class="px-3 py-2 md:px-4 md:py-3 bg-blue-600 text-white rounded hover:bg-blue-700">
                 Kelola Departemen
             </a>
-            <a href="/kpi-app/public/admin/users"
+            <a href="/kpi-app/public/users/1"
                class="px-3 py-2 md:px-4 md:py-3 bg-green-600 text-white rounded hover:bg-green-700">
                 Kelola User
             </a>
@@ -96,11 +96,11 @@ $role = $user['role'];
     <!-- MENU MANAGER -->
     <?php if ($role === 'manager'): ?>
         <div class="mt-6 space-x-2">
-            <a href="/kpi-app/public/manager/kpi_templates"
+            <a href="/kpi-app/public/kpi_templates"
                class="px-3 py-2 md:px-5 md:py-3 bg-purple-600 text-white rounded hover:bg-purple-700">
                 Template KPI
             </a>
-            <a href="/kpi-app/public/manager/report"
+            <a href="/kpi-app/public/report"
                class="px-3 py-2 md:px-5 md:py-3 bg-yellow-600 text-white rounded hover:bg-yellow-700">
                 Report
             </a>
@@ -110,7 +110,7 @@ $role = $user['role'];
     <!-- MENU USER -->
     <?php if ($role === 'user'): ?>
         <div class="mt-6">
-            <a href="/kpi-app/public/user/my_kpi"
+            <a href="/kpi-app/public/my_kpi"
                class="px-3 py-2 md:px-5 md:py-3 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                 Isi Realisasi KPI
             </a>

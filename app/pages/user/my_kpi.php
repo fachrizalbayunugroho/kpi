@@ -37,7 +37,7 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p class="text-gray-600">Periode: <?= htmlspecialchars($row['periode']) ?></p>
                         <p class="text-gray-500 text-sm"><?= htmlspecialchars($row['deskripsi']) ?></p>
                         
-                        <a href="kpi_detail&assignment_id=<?= $row['assignment_id'] ?>" 
+                        <a href="public/kpi_detail&assignment_id=<?= $row['assignment_id'] ?>" 
                            class="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
                            Lihat Detail
                         </a>

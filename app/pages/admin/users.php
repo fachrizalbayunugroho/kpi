@@ -13,6 +13,15 @@ if (isset($_POST['add_user'])) {
     $role = $_POST['role'];
     $departemen_id = $_POST['departemen_id'];
 
+    $check = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = :email");
+    $check->execute([':email' => $email]);
+    $exists = $check->fetchColumn();
+
+    if ($exists > 0) {
+       echo "<script>alert('Email sudah terdaftar, silakan gunakan email lain.'); window.location.href='/kpi-app/public/users/1';</script>";
+        exit;
+    }
+
     $sql = "INSERT INTO users (nama, email, password, role, departemen_id) 
         VALUES (?, ?, ?, ?, ?)";
 	$stmt = $pdo->prepare($sql);
@@ -35,7 +44,31 @@ if (isset($_GET['delete'])) {
 $departemen = $pdo->query("SELECT * FROM departments");
 
 // READ users
-$users = $pdo->query("SELECT u.*, d.name AS departemen FROM users u LEFT JOIN departments d ON u.departemen_id=d.id");
+$total_users = $pdo->query("SELECT COUNT(*) 
+    FROM users u 
+    LEFT JOIN departments d ON u.departemen_id = d.id")->fetchColumn();
+$total = (int)$total_users;
+
+// Pagination setup
+$page = ($param && is_numeric($param)) ? (int)$param : 1;
+$limit = 3; // number of rows per page
+$offset = ($page - 1) * $limit;
+
+// Fetch users with pagination
+$stmt = $pdo->prepare("
+    SELECT u.*, d.name AS departemen 
+    FROM users u 
+    LEFT JOIN departments d ON u.departemen_id = d.id 
+    ORDER BY u.id 
+    LIMIT :limit OFFSET :offset
+");
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->execute();
+$users = $stmt;
+
+$totalPages = ceil($total / $limit);
+
 ?>
 
 <!DOCTYPE html>
@@ -78,37 +111,63 @@ $users = $pdo->query("SELECT u.*, d.name AS departemen FROM users u LEFT JOIN de
         </button>
   </form>
 
-    <!-- Tabel User -->
-    <div class="overflow-x-auto">
-    <table class="w-full border text-sm">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="border p-2">Nama</th>
-          <th class="border p-2">Email</th>
-          <th class="border p-2">Role</th>
-          <th class="border p-2">Departemen</th>
-          <th class="border p-2">Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php while($u = $users->fetch(PDO::FETCH_ASSOC)): ?>
-        <tr>
-          <td class="border p-2"><?= $u['nama']; ?></td>
-          <td class="border p-2"><?= $u['email']; ?></td>
-          <td class="border p-2"><?= ucfirst($u['role']); ?></td>
-          <td class="border p-2"><?= $u['departemen'] ?: '-'; ?></td>
-          <td class="border p-2">
-            <a href="users&delete=<?= $u['id']; ?>" 
-               onclick="return confirm('Hapus user ini?')"
-               class="bg-red-500 text-white px-2 py-1 rounded">
-              Hapus
-            </a>
-          </td>
-        </tr>
-        <?php endwhile; ?>
-      </tbody>
-    </table>
-	</div>
+<!-- Tabel User -->
+<div class="overflow-x-auto">
+  <table class="w-full border text-sm">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="border p-2">Nama</th>
+        <th class="border p-2">Email</th>
+        <th class="border p-2">Role</th>
+        <th class="border p-2">Departemen</th>
+        <th class="border p-2">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php 
+      while($u = $users->fetch(PDO::FETCH_ASSOC)): ?>
+      <tr>
+        <td class="border p-2"><?= htmlspecialchars($u['nama']); ?></td>
+        <td class="border p-2"><?= htmlspecialchars($u['email']); ?></td>
+        <td class="border p-2"><?= ucfirst($u['role']); ?></td>
+        <td class="border p-2"><?= $u['departemen'] ?: '-'; ?></td>
+        <td class="border p-2">
+          <a href="users&delete=<?= $u['id']; ?>" 
+             onclick="return confirm('Hapus user ini?')"
+             class="bg-red-500 text-white px-2 py-1 rounded">
+            Hapus
+          </a>
+        </td>
+      </tr>
+      <?php endwhile; ?>
+    </tbody>
+    <tbody>
+        <?php 
+        foreach ($users as $user): ?>
+            <tr>
+                <td class="border px-4 py-2"><?= $no++; ?></td>
+                <td class="border px-4 py-2"><?= htmlspecialchars($user['nama']) ?></td>
+                <td class="border px-4 py-2"><?= htmlspecialchars($user['email']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination Links -->
+<div class="flex gap-2 mt-4">
+  <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+    <a href="/kpi-app/public/users/<?= $i ?>"
+       class="px-3 py-1 rounded <?= $i == $pageNumber ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
+      <?= $i ?>
+    </a>
+  <?php endfor; ?>
+  <?php if ($page > 1): ?>
+  <a href="/kpi-app/public/users/<?= $page - 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Prev</a>
+  <?php endif; ?>
+
+  <a href="/kpi-app/public/users/<?= $page + 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Next</a>
+</div>
 
         <!-- Tombol kembali -->
     <div class="mt-4">

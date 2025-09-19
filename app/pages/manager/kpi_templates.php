@@ -121,7 +121,7 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
 	</div>
 
     <div class="mt-4">
-        <a href="../dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+        <a href="../public/dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
             ⬅ Kembali ke Dashboard
         </a>
     </div>
