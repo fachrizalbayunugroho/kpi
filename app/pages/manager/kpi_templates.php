@@ -24,12 +24,12 @@ if (isset($_POST['add_template'])) {
     exit;
 }
 
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+if ($action === 'delete' && $param) {
     $stmt = $pdo->prepare("DELETE FROM kpi_templates WHERE id = :id");
-    $stmt->execute([':id' => $id]);
-    header("Location: kpi_templates");
-    exit;
+    $stmt->execute([':id' => $param]);
+
+  echo "<script>alert('Template berhasil dihapus'); window.location.href='/kpi-app/public/kpi_templates';</script>";
+  exit;
 }
 
 $departemen = $pdo->query("SELECT * FROM departments");
@@ -97,18 +97,18 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
           <td class="border p-2"><?= htmlspecialchars($t['deskripsi']); ?></td>
           <td class="border p-2">
   			<div class="flex flex-col sm:flex-row gap-2">
-    		<a href="template_item&template_id=<?= $t['id']; ?>"
+    		<a href="/kpi-app/public/kpi_templates/detail/<?= $t['id']; ?>"
        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm text-center">
        Kelola Item
    			</a>
 
-    		<a href="kpi_templates&delete=<?= $t['id'] ?>"
+    		<a href="/kpi-app/public/kpi_templates/delete/<?= $t['id'] ?>"
        onclick="return confirm('Hapus template ini?')"
        class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm text-center">
        Hapus
     		</a>
 
-    		<a href="assign_kpi&template_id=<?= $t['id']; ?>"
+    		<a href="/kpi-app/public/kpi_templates/assign/<?= $t['id']; ?>"
        class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded text-sm text-center">
        Assign
     		</a>
@@ -121,7 +121,7 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
 	</div>
 
     <div class="mt-4">
-        <a href="../public/dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+        <a href="/kpi-app/public/dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
             ⬅ Kembali ke Dashboard
         </a>
     </div>

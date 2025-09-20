@@ -58,7 +58,7 @@ $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p class="text-xs text-gray-600 mt-1"><?= $persen ?>%</p>
           </td>
           <td class="border px-2 py-1 text-center">
-            <a href="report_detail&user_id=<?= $row['user_id'] ?>" 
+          	<a href="/kpi-app/public/report/detail/<?= $row['user_id'] ?>"
                class="bg-blue-500 text-white px-2 py-1 rounded">Detail</a>
           </td>
         </tr>

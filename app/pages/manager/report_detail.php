@@ -2,10 +2,10 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-if (!isset($_GET['user_id'])) {
-    die("User tidak ditemukan.");
-}
-$user_id = (int) $_GET['user_id'];
+//if (!isset($_GET['user_id'])) {
+    //die("User tidak ditemukan.");
+//}
+$user_id = $param;
 
 // ambil info user
 $sqlUser = "SELECT u.id, u.nama, d.name as dept
@@ -15,11 +15,13 @@ $sqlUser = "SELECT u.id, u.nama, d.name as dept
 $stmtUser = $pdo->prepare($sqlUser);
 $stmtUser->execute([':uid' => $user_id]);
 $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
 if (!$user) {
     die("Data user tidak ditemukan.");
 }
 
 // ambil data KPI detail (assignment + item + realisasi)
+if ($action === 'detail' && $param) {
 $sql = "SELECT i.id as item_id, i.indikator, i.target, i.bobot,
                r.realisasi, r.keterangan, r.evidence
         FROM kpi_assignments a
@@ -29,6 +31,7 @@ $sql = "SELECT i.id as item_id, i.indikator, i.target, i.bobot,
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':uid' => $user_id]);
 $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -108,8 +111,8 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 
   <div class="mt-6">
-    <a href="../manager/report" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>
-    <a href="../manager/export&user_id=<?= $user_id ?>" 
+    <a href="/kpi-app/public/report" class="bg-gray-500 text-white px-4 py-2 rounded">Kembali</a>
+    <a href="/kpi-app/public/report/export/<?= $user_id ?>" 
      class="bg-green-600 text-white px-4 py-2 rounded">Export Excel</a>
   </div>
 </div>

@@ -2,10 +2,10 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-if (!isset($_GET['user_id'])) {
-    die("User tidak ditemukan.");
-}
-$user_id = (int) $_GET['user_id'];
+//if (!isset($_GET['user_id'])) {
+    //die("User tidak ditemukan.");
+//}
+$user_id = $param;
 
 // ambil info user
 $sqlUser = "SELECT u.id, u.nama, d.name as dept

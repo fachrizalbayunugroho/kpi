@@ -2,19 +2,13 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-// ambil assignment_id dari URL
-if (!isset($_GET['assignment_id'])) {
-    die("Assignment tidak ditemukan.");
-}
-$assignment_id = (int) $_GET['assignment_id'];
-
 // ambil detail assignment & template
 $sql = "SELECT a.id AS assignment_id, a.user_id, t.id AS template_id, t.nama, t.periode, t.deskripsi
         FROM kpi_assignments a
         JOIN kpi_templates t ON a.template_id = t.id
         WHERE a.id = :aid";
 $stmt = $pdo->prepare($sql);
-$stmt->execute([':aid' => $assignment_id]);
+$stmt->execute([':aid' => $param]);
 $assignment = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$assignment) {
@@ -41,7 +35,7 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
     <p class="text-gray-600">Periode: <?= htmlspecialchars($assignment['periode']) ?></p>
     <p class="text-gray-500 mb-4"><?= htmlspecialchars($assignment['deskripsi']) ?></p>
     <p class="text-l mb-6">(CAN ONLY BE FILLED ONCE)</p>
-    <form action="save" method="post" enctype="multipart/form-data" class="space-y-4">
+    <form action="/kpi-app/public/my_kpi/save" method="post" enctype="multipart/form-data" class="space-y-4">
         <input type="hidden" name="assignment_id" value="<?= $assignment['assignment_id'] ?>">
 
         <div class="overflow-x-auto">
@@ -85,7 +79,7 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
         </button>
     </form>
     <div class="mt-4">
-    <a href="../user/my_kpi" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Kembali</a>
+    <a href="/kpi-app/public/my_kpi" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Kembali</a>
 	</div>
 </div>
 <script>

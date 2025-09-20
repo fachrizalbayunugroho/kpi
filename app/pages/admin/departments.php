@@ -17,12 +17,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
 }
 
 // Hapus departemen
-if (isset($_GET['delete'])) {
-    $id = (int) $_GET['delete'];
-    $stmt = $pdo->prepare("DELETE FROM departments WHERE id = ?");
-    $stmt->execute([$id]);
-    header("Location: departments");
-    exit;
+if ($action === 'delete' && $param) {
+    $stmt = $pdo->prepare("DELETE FROM departments WHERE id = :id");
+    $stmt->execute([':id' => $param]);
+
+   echo "<script>alert('Departemen berhasil dihapus'); window.location.href='/kpi-app/public/departments';</script>";
+   exit;
 }
 
 // Ambil daftar departemen
@@ -68,7 +68,7 @@ $departments = $stmt->fetchAll();
                     <!--<td class="p-2 border"><?= $dept['id'] ?></td>-->
                     <td class="p-2 border"><?= $dept['name'] ?></td>
                     <td class="p-2 border">
-                        <a href="departments&delete=<?= $dept['id'] ?>"
+                        <a href="/kpi-app/public/departments/delete/<?= $dept['id'] ?>"
                            onclick="return confirm('Yakin hapus departemen ini?')"
                            class="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600">
                             Hapus

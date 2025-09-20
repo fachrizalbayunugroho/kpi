@@ -2,19 +2,15 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-// Pastikan ada template_id
-if (!isset($_GET['template_id'])) {
-    die("Template ID tidak ditemukan!");
-}
-$template_id = (int) $_GET['template_id'];
-
 // Ambil data template
+if ($action === 'assign' && $param) {
 $stmt = $pdo->prepare("SELECT t.*, d.name AS departemen 
                         FROM kpi_templates t
                         LEFT JOIN departments d ON t.departemen_id = d.id
                         WHERE t.id = :id");
-$stmt->execute([':id' => $template_id]);
+$stmt->execute([':id' => $param]);
 $template = $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 if (!$template) {
     die("Template tidak ditemukan!");
@@ -35,17 +31,17 @@ if (isset($_POST['assign'])) {
             // Cek apakah sudah ada assignment
             $check = $pdo->prepare("SELECT COUNT(*) FROM kpi_assignments 
                                      WHERE template_id = :tid AND user_id = :uid");
-            $check->execute([':tid' => $template_id, ':uid' => $user_id]);
+            $check->execute([':tid' => $param, ':uid' => $user_id]);
             $exists = $check->fetchColumn();
 
             if (!$exists) {
                 $stmt = $pdo->prepare("INSERT INTO kpi_assignments (template_id, user_id, assigned_at)
                                         VALUES (:tid, :uid, NOW())");
-                $stmt->execute([':tid' => $template_id, ':uid' => $user_id]);
+                $stmt->execute([':tid' => $param, ':uid' => $user_id]);
             }
         }
     }
-    header("Location: assign_kpi&template_id=$template_id");
+    echo "<script>alert('Assigned!'); window.location.href='/kpi-app/public/kpi_templates/assign/$param';</script>";
     exit;
 }
 
@@ -53,7 +49,7 @@ if (isset($_POST['assign'])) {
 $stmt = $pdo->prepare("SELECT u.* FROM kpi_assignments a
                         JOIN users u ON a.user_id = u.id
                         WHERE a.template_id = :tid");
-$stmt->execute([':tid' => $template_id]);
+$stmt->execute([':tid' => $param]);
 $assigned_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -104,7 +100,7 @@ $assigned_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </ul>
 
     <div class="mt-4">
-      <a href="../manager/kpi_templates" class="bg-gray-600 text-white px-4 py-2 rounded">Kembali</a>
+      <a href="/kpi-app/public/kpi_templates" class="bg-gray-600 text-white px-4 py-2 rounded">Kembali</a>
     </div>
   </div>
 </body>

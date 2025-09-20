@@ -27,17 +27,17 @@ if (isset($_POST['add_user'])) {
 	$stmt = $pdo->prepare($sql);
 	$stmt->execute([$name, $email, $password, $role, $departemen_id]);
     
-    header("Location: users");
+    echo "<script>alert('User berhasil ditambahkan'); window.location.href='/kpi-app/public/users/1';</script>";
     exit;
 }
 
 // DELETE
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->execute([$id]);
-    header("Location: users");
-    exit;
+if ($action === 'delete' && $param) {
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
+    $stmt->execute([':id' => $param]);
+
+   echo "<script>alert('User berhasil dihapus'); window.location.href='/kpi-app/public/users/1';</script>";
+   exit;
 }
 
 // READ departemen
@@ -50,7 +50,11 @@ $total_users = $pdo->query("SELECT COUNT(*)
 $total = (int)$total_users;
 
 // Pagination setup
-$page = ($param && is_numeric($param)) ? (int)$param : 1;
+if ($action === 'page' && $param) {
+    $page = (int)$param;
+} else {
+    $page = 1;
+}
 $limit = 3; // number of rows per page
 $offset = ($page - 1) * $limit;
 
@@ -132,11 +136,11 @@ $totalPages = ceil($total / $limit);
         <td class="border p-2"><?= ucfirst($u['role']); ?></td>
         <td class="border p-2"><?= $u['departemen'] ?: '-'; ?></td>
         <td class="border p-2">
-          <a href="users&delete=<?= $u['id']; ?>" 
+          <a href="/kpi-app/public/users/delete/<?= $u['id'] ?>" 
              onclick="return confirm('Hapus user ini?')"
              class="bg-red-500 text-white px-2 py-1 rounded">
             Hapus
-          </a>
+          </a> 
         </td>
       </tr>
       <?php endwhile; ?>
@@ -157,21 +161,21 @@ $totalPages = ceil($total / $limit);
 <!-- Pagination Links -->
 <div class="flex gap-2 mt-4">
   <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-    <a href="/kpi-app/public/users/<?= $i ?>"
+    <a href="/kpi-app/public/users/page/<?= $i ?>"
        class="px-3 py-1 rounded <?= $i == $pageNumber ? 'bg-blue-600 text-white' : 'bg-gray-200' ?>">
       <?= $i ?>
     </a>
   <?php endfor; ?>
   <?php if ($page > 1): ?>
-  <a href="/kpi-app/public/users/<?= $page - 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Prev</a>
+  <a href="/kpi-app/public/users/page/<?= $page - 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Prev</a>
   <?php endif; ?>
 
-  <a href="/kpi-app/public/users/<?= $page + 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Next</a>
+  <a href="/kpi-app/public/users/page/<?= $page + 1 ?>" class="px-3 py-1 bg-gray-200 rounded">Next</a>
 </div>
 
         <!-- Tombol kembali -->
     <div class="mt-4">
-        <a href="../dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+        <a href="/kpi-app/public/dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
             ⬅ Kembali ke Dashboard
         </a>
     </div>

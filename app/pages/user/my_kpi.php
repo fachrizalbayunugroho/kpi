@@ -36,8 +36,7 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <h2 class="text-xl font-semibold"><?= htmlspecialchars($row['nama']) ?></h2>
                         <p class="text-gray-600">Periode: <?= htmlspecialchars($row['periode']) ?></p>
                         <p class="text-gray-500 text-sm"><?= htmlspecialchars($row['deskripsi']) ?></p>
-                        
-                        <a href="public/kpi_detail&assignment_id=<?= $row['assignment_id'] ?>" 
+                        <a href="/kpi-app/public/my_kpi/detail/<?= $row['assignment_id'] ?>"
                            class="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
                            Lihat Detail
                         </a>
@@ -48,7 +47,7 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <p class="text-gray-500">Belum ada KPI yang ditugaskan.</p>
         <?php endif; ?>
         <div class="mt-4">
-        <a href="../dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+        <a href="/kpi-app/public/dashboard" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
             ⬅ Kembali ke Dashboard
         </a>
     </div>

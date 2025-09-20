@@ -11,30 +11,63 @@
 require __DIR__ . '/../app/config/database.php';
 require __DIR__ . '/../app/core/auth.php';
 
-$request = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+$requestUri = $_SERVER['REQUEST_URI'];
+$basePath   = '/kpi-app/public'; // sesuaikan dengan folder project kamu
+$path       = str_replace($basePath, '', $requestUri);
+$segments   = array_values(array_filter(explode('/', $path)));
 
-$segments = explode('/', $request);
+$page   = $segments[0] ?? 'login';  
+$action = $segments[1] ?? null;     
+$param  = $segments[2] ?? null;     
 
-// index 0 = kpi-app, index 1 = public
-$page     = $segments[2] ?? 'login';  // default ke login
-$param    = $segments[3] ?? null;     // default null
+switch ($page) {
+    case 'kpi_templates':
+        if ($action === 'assign' && $param) {
+            require __DIR__ . '/../app/pages/manager/assign_kpi.php';
+        } elseif ($action === 'detail' && $param) {
+          	require __DIR__ . '/../app/pages/manager/template_item.php';
+        } else {
+            require __DIR__ . '/../app/pages/manager/kpi_templates.php'; 
+        }
+        break;
 
-// mapping routes
-$routes = [
-    'login'      		=> __DIR__ . '/../app/pages/login.php',
-    'logout'     		=> __DIR__ . '/../app/pages/logout.php',
-    'dashboard'  		=> __DIR__ . '/../app/pages/dashboard.php',
-    'departments'		=> __DIR__ . '/../app/pages/admin/departments.php',
-    'users'      		=> __DIR__ . '/../app/pages/admin/users.php',
-    'kpi_templates'     => __DIR__ . '/../app/pages/manager/kpi_templates.php',
-    'report'     		=> __DIR__ . '/../app/pages/manager/report.php',
-    'my_kpi' 			=> __DIR__ . '/../app/pages/user/my_kpi.php',
-    'kpi_detail' 		=> __DIR__ . '/../app/pages/user/kpi_detail.php'
-];
+    case 'report':
+        if ($action === 'detail' && $param) {
+            require __DIR__ . '/../app/pages/manager/report_detail.php';
+        } elseif ($action === 'export' && $param) {
+          	require __DIR__ . '/../app/pages/manager/export.php';
+        } else {
+            require __DIR__ . '/../app/pages/manager/report.php';
+        }
+        break;
 
-// cek apakah $page ada di routes
-if (array_key_exists($page, $routes)) {
-    include $routes[$page];
-} else {
-    echo "<h1>404 - Page Not Found</h1>";
+    case 'users':
+        require __DIR__ . '/../app/pages/admin/users.php';
+        break;
+
+    case 'departments':
+        require __DIR__ . '/../app/pages/admin/departments.php';
+        break;
+
+    case 'login':
+        require __DIR__ . '/../app/pages/login.php';
+        break;
+
+    case 'logout':
+        require __DIR__ . '/../app/pages/logout.php';
+        break;
+
+    case 'dashboard':
+        require __DIR__ . '/../app/pages/dashboard.php';
+        break;
+
+    case 'my_kpi':
+        if ($action === 'detail' && $param) {
+            require __DIR__ . '/../app/pages/user/kpi_detail.php';
+        } elseif ($action === 'save') {
+            require __DIR__ . '/../app/pages/user/save.php';
+        } else {
+            require __DIR__ . '/../app/pages/user/my_kpi.php';
+        }
+        break;
 }

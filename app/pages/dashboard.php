@@ -86,7 +86,7 @@ $role = $user['role'];
                class="px-3 py-2 md:px-4 md:py-3 bg-blue-600 text-white rounded hover:bg-blue-700">
                 Kelola Departemen
             </a>
-            <a href="/kpi-app/public/users/1"
+            <a href="/kpi-app/public/users/page/1"
                class="px-3 py-2 md:px-4 md:py-3 bg-green-600 text-white rounded hover:bg-green-700">
                 Kelola User
             </a>

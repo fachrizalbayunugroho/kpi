@@ -2,19 +2,15 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-// Ambil template_id dari URL
-if (!isset($_GET['template_id'])) {
-    die("Template ID tidak ditemukan!");
-}
-$template_id = (int) $_GET['template_id'];
-
 // GET data template
+if ($action === 'detail' && $param) {
 $stmt = $pdo->prepare("SELECT t.*, d.name AS departemen 
                         FROM kpi_templates t
                         LEFT JOIN departments d ON t.departemen_id = d.id
                         WHERE t.id = :id");
-$stmt->execute([':id' => $template_id]);
+$stmt->execute([':id' => $param]);
 $template = $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 if (!$template) {
     die("Template tidak ditemukan!");
@@ -30,7 +26,7 @@ if (isset($_POST['add_item'])) {
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(bobot),0) as total 
                            FROM kpi_items 
                            WHERE template_id = :template_id");
-    $stmt->execute([':template_id' => $template_id]);
+    $stmt->execute([':template_id' => $param]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $totalBobot = (int)$row['total'];
 
@@ -45,30 +41,31 @@ if (isset($_POST['add_item'])) {
     $stmt = $pdo->prepare("INSERT INTO kpi_items (template_id, indikator, bobot, target)
                            VALUES (:template_id, :indikator, :bobot, :target)");
     $stmt->execute([
-        ':template_id' => $template_id,
+        ':template_id' => $param,
         ':indikator' => $indikator,
         ':bobot' => $bobot,
         ':target' => $target
     ]);
 
-	header("Location: template_item&template_id=$template_id");
+	echo "<script>alert('Item berhasil ditambahkan'); window.location.href='/kpi-app/public/kpi_templates/detail/$param';</script>";
     exit;
 }
 
+// cek apakah ada request delete
+$subAction = $segments[3] ?? null;   // "delete"
+$subParam  = $segments[4] ?? null;   // id item
 
-// DELETE item KPI
-if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+if ($subAction === 'delete' && $subParam) {
     $stmt = $pdo->prepare("DELETE FROM kpi_items WHERE id = :id");
-    $stmt->execute([':id' => $id]);
+    $stmt->execute([':id' => $subParam]);
 
-    header("Location: template_item&template_id=$template_id");
+    echo "<script>alert('Item berhasil dihapus'); window.location.href='/kpi-app/public/kpi_templates/detail/$param';</script>";
     exit;
 }
 
 // GET items dalam template
 $stmt = $pdo->prepare("SELECT * FROM kpi_items WHERE template_id = :template_id ORDER BY id DESC");
-$stmt->execute([':template_id' => $template_id]);
+$stmt->execute([':template_id' => $param]);
 $items = $stmt;
 ?>
 
@@ -124,8 +121,8 @@ $items = $stmt;
           <td class="border p-2"><?= htmlspecialchars($i['indikator']); ?></td>
           <td class="border p-2"><?= $i['bobot']; ?></td>
           <td class="border p-2"><?= $i['target']; ?></td>
-          <td class="border p-2">
-          <a href="template_item&template_id=<?= $template_id ?>&delete=<?= $i['id']; ?>"
+          <td class="border p-2">          	
+          <a href="/kpi-app/public/kpi_templates/detail/<?= $param ?>/delete/<?= $i['id'] ?>"
                onclick="return confirm('Hapus item ini?')"
                class="bg-red-500 text-white px-2 py-1 rounded">Hapus</a>
           </td>
@@ -135,7 +132,7 @@ $items = $stmt;
     </table>
 
     <div class="mt-4">
-      <a href="../manager/kpi_templates" class="bg-gray-600 text-white px-4 py-2 rounded">Kembali</a>
+      <a href="/kpi-app/public/kpi_templates" class="bg-gray-600 text-white px-4 py-2 rounded">Kembali</a>
     </div>
 
   </div>
