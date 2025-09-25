@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../core/auth.php';
 // Ambil data template
 if ($action === 'assign' && $param) {
 $stmt = $pdo->prepare("SELECT t.*, d.name AS departemen 
-                        FROM kpi_templates t
+                        FROM kpi_template t
                         LEFT JOIN departments d ON t.departemen_id = d.id
                         WHERE t.id = :id");
 $stmt->execute([':id' => $param]);
@@ -29,13 +29,13 @@ if (isset($_POST['assign'])) {
     if (isset($_POST['user_ids'])) {
         foreach ($_POST['user_ids'] as $user_id) {
             // Cek apakah sudah ada assignment
-            $check = $pdo->prepare("SELECT COUNT(*) FROM kpi_assignments 
+            $check = $pdo->prepare("SELECT COUNT(*) FROM kpi_assignment 
                                      WHERE template_id = :tid AND user_id = :uid");
             $check->execute([':tid' => $param, ':uid' => $user_id]);
             $exists = $check->fetchColumn();
 
             if (!$exists) {
-                $stmt = $pdo->prepare("INSERT INTO kpi_assignments (template_id, user_id, assigned_at)
+                $stmt = $pdo->prepare("INSERT INTO kpi_assignment (template_id, user_id, assigned_at)
                                         VALUES (:tid, :uid, NOW())");
                 $stmt->execute([':tid' => $param, ':uid' => $user_id]);
             }
@@ -46,7 +46,7 @@ if (isset($_POST['assign'])) {
 }
 
 // Ambil user yang sudah diassign
-$stmt = $pdo->prepare("SELECT u.* FROM kpi_assignments a
+$stmt = $pdo->prepare("SELECT u.* FROM kpi_assignment a
                         JOIN users u ON a.user_id = u.id
                         WHERE a.template_id = :tid");
 $stmt->execute([':tid' => $param]);
@@ -68,9 +68,8 @@ $assigned_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Detail Template -->
     <div class="mb-6 p-4 border rounded bg-gray-50">
-      <p><strong>Nama Template:</strong> <?= htmlspecialchars($template['nama']); ?></p>
+      <p><strong>Nama Template:</strong> <?= htmlspecialchars($template['nama_template']); ?></p>
       <p><strong>Departemen:</strong> <?= htmlspecialchars($template['departemen']); ?></p>
-      <p><strong>Periode:</strong> <?= $template['periode']; ?></p>
     </div>
 
     <!-- Form Assign -->

@@ -10,9 +10,9 @@ $sql = "SELECT u.id as user_id, u.nama as user_nama, d.name as dept_nama,
                SUM( (r.realisasi / NULLIF(i.target,0)) * i.bobot ) as skor
         FROM users u
         JOIN departments d ON u.departemen_id = d.id
-        JOIN kpi_assignments a ON a.user_id = u.id
-        JOIN kpi_items i ON i.template_id = a.template_id
-        LEFT JOIN kpi_realisasi r ON r.assignment_id = a.id AND r.item_id = i.id
+        JOIN kpi_assignment a ON a.user_id = u.id
+        JOIN kpi_item i ON i.template_id = a.template_id
+        LEFT JOIN kpi_user r ON r.assignment_id = a.id AND r.item_id = i.id
         WHERE d.id = :dept
         GROUP BY u.id";
 $stmt = $pdo->prepare($sql);

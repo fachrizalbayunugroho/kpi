@@ -41,7 +41,7 @@ foreach ($realisasi as $item_id => $nilai) {
     }
 
     // simpan ke database
-    $sql = "INSERT INTO kpi_realisasi (assignment_id, item_id, realisasi, keterangan, evidence) 
+    $sql = "INSERT INTO kpi_user (assignment_id, item_id, realisasi, keterangan, evidence) 
             VALUES (:aid, :iid, :realisasi, :ket, :evidence)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([

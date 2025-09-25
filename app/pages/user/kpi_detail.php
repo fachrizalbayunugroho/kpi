@@ -3,9 +3,9 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
 // ambil detail assignment & template
-$sql = "SELECT a.id AS assignment_id, a.user_id, t.id AS template_id, t.nama, t.periode, t.deskripsi
-        FROM kpi_assignments a
-        JOIN kpi_templates t ON a.template_id = t.id
+$sql = "SELECT a.id AS assignment_id, a.user_id, t.id AS template_id, t.nama_template, t.deskripsi
+        FROM kpi_assignment a
+        JOIN kpi_template t ON a.template_id = t.id
         WHERE a.id = :aid";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':aid' => $param]);
@@ -16,7 +16,7 @@ if (!$assignment) {
 }
 
 // ambil item KPI dari template
-$sqlItems = "SELECT * FROM kpi_items WHERE template_id = :tid";
+$sqlItems = "SELECT * FROM kpi_item WHERE template_id = :tid";
 $stmtItems = $pdo->prepare($sqlItems);
 $stmtItems->execute([':tid' => $assignment['template_id']]);
 $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
@@ -31,8 +31,8 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="bg-gray-100 p-6">
 <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
-    <h1 class="text-2xl font-bold mb-2"><?= htmlspecialchars($assignment['nama']) ?></h1>
-    <p class="text-gray-600">Periode: <?= htmlspecialchars($assignment['periode']) ?></p>
+    <h1 class="text-2xl font-bold mb-2"><?= htmlspecialchars($assignment['nama_template']) ?></h1>
+    <!--<p class="text-gray-600">Periode: <?= htmlspecialchars($assignment['periode']) ?></p>-->
     <p class="text-gray-500 mb-4"><?= htmlspecialchars($assignment['deskripsi']) ?></p>
     <p class="text-l mb-6">(CAN ONLY BE FILLED ONCE)</p>
     <form action="/kpi-app/public/my_kpi/save" method="post" enctype="multipart/form-data" class="space-y-4">
@@ -44,6 +44,7 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <th class="border px-2 py-1">Indikator</th>
                     <th class="border px-2 py-1">Target</th>
+                    <th class="border px-2 py-1">Satuan</th>
                     <th class="border px-2 py-1">Bobot</th>
                     <th class="border px-2 py-1">Realisasi</th>
                     <th class="border px-2 py-1">Keterangan</th>
@@ -55,6 +56,7 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <td class="border px-2 py-1"><?= htmlspecialchars($item['indikator']) ?></td>
                     <td class="border px-2 py-1 text-center"><?= htmlspecialchars($item['target']) ?></td>
+                    <td class="border px-2 py-1 text-center"><?= htmlspecialchars($item['satuan']) ?></td>
                     <td class="border px-2 py-1 text-center"><?= htmlspecialchars($item['bobot']) ?>%</td>
                     <td class="border px-2 py-1">
                             <input type="number" step="0.01" name="realisasi[<?= $item['id'] ?>]" 

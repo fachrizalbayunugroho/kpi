@@ -22,11 +22,11 @@ if (!$user) {
 
 // ambil data KPI detail (assignment + item + realisasi)
 if ($action === 'detail' && $param) {
-$sql = "SELECT i.id as item_id, i.indikator, i.target, i.bobot,
+$sql = "SELECT i.id as item_id, i.indikator, i.target, i.bobot, i.satuan,
                r.realisasi, r.keterangan, r.evidence
-        FROM kpi_assignments a
-        JOIN kpi_items i ON i.template_id = a.template_id
-        LEFT JOIN kpi_realisasi r ON r.assignment_id = a.id AND r.item_id = i.id
+        FROM kpi_assignment a
+        JOIN kpi_item i ON i.template_id = a.template_id
+        LEFT JOIN kpi_user r ON r.assignment_id = a.id AND r.item_id = i.id
         WHERE a.user_id = :uid";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':uid' => $user_id]);
@@ -51,6 +51,7 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <tr>
           <th class="border px-2 py-1">Indikator</th>
           <th class="border px-2 py-1">Target</th>
+          <th class="border px-2 py-1">Satuan</th>
           <th class="border px-2 py-1">Bobot</th>
           <th class="border px-2 py-1">Realisasi</th>
           <th class="border px-2 py-1">Keterangan</th>
@@ -74,6 +75,7 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <tr>
           <td class="border px-2 py-1"><?= htmlspecialchars($row['indikator']) ?></td>
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['target']) ?></td>
+          <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['satuan']) ?></td>
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['bobot']) ?>%</td>
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['realisasi'] ?? '-') ?></td>
           <td class="border px-2 py-1"><?= htmlspecialchars($row['keterangan'] ?? '-') ?></td>
@@ -91,7 +93,7 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </tbody>
       <tfoot class="bg-gray-50 font-bold">
         <tr>
-          <td class="border px-2 py-1 text-right" colspan="2">Total</td>
+          <td class="border px-2 py-1 text-right" colspan="3">Total</td>
           <td class="border px-2 py-1 text-center"><?= $totalBobot ?>%</td>
           <td class="border px-2 py-1 text-center" colspan="3">Skor Akhir</td>
           <td class="border px-2 py-1 text-center"><?= round($totalSkor, 2) ?></td>

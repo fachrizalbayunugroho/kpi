@@ -7,11 +7,10 @@ $user_id = $_SESSION['user']['id'];
 // ambil daftar KPI assignment untuk user ini
 $sql = "SELECT 
             a.id AS assignment_id, 
-            t.nama, 
-            t.periode, 
+            t.nama_template, 
             t.deskripsi 
-        FROM kpi_assignments a
-        JOIN kpi_templates t ON a.template_id = t.id
+        FROM kpi_assignment a
+        JOIN kpi_template t ON a.template_id = t.id
         WHERE a.user_id = :uid";
 
 $stmt = $pdo->prepare($sql);
@@ -33,8 +32,8 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <ul class="space-y-4">
                 <?php foreach ($assignments as $row): ?>
                     <li class="border p-4 rounded-lg">
-                        <h2 class="text-xl font-semibold"><?= htmlspecialchars($row['nama']) ?></h2>
-                        <p class="text-gray-600">Periode: <?= htmlspecialchars($row['periode']) ?></p>
+                        <h2 class="text-xl font-semibold"><?= htmlspecialchars($row['nama_template']) ?></h2>
+                        <!--<p class="text-gray-600">Periode: <?= htmlspecialchars($row['periode']) ?></p>-->
                         <p class="text-gray-500 text-sm"><?= htmlspecialchars($row['deskripsi']) ?></p>
                         <a href="/kpi-app/public/my_kpi/detail/<?= $row['assignment_id'] ?>"
                            class="mt-2 inline-block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">

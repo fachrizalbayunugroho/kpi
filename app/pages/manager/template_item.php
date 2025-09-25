@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../core/auth.php';
 // GET data template
 if ($action === 'detail' && $param) {
 $stmt = $pdo->prepare("SELECT t.*, d.name AS departemen 
-                        FROM kpi_templates t
+                        FROM kpi_template t
                         LEFT JOIN departments d ON t.departemen_id = d.id
                         WHERE t.id = :id");
 $stmt->execute([':id' => $param]);
@@ -19,12 +19,12 @@ if (!$template) {
 // CREATE item KPI
 if (isset($_POST['add_item'])) {
     $indikator = $_POST['indikator'];
-    $bobot = (int)$_POST['bobot'];
+    $bobot = (float)$_POST['bobot'];
     $target = $_POST['target'];
 
     // Hitung total bobot yang sudah ada
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(bobot),0) as total 
-                           FROM kpi_items 
+                           FROM kpi_item 
                            WHERE template_id = :template_id");
     $stmt->execute([':template_id' => $param]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -37,26 +37,42 @@ if (isset($_POST['add_item'])) {
         exit;
     }
 
-    // Jika valid, simpan data
-    $stmt = $pdo->prepare("INSERT INTO kpi_items (template_id, indikator, bobot, target)
-                           VALUES (:template_id, :indikator, :bobot, :target)");
+    $stmt = $pdo->prepare("INSERT INTO kpi_item 
+        (template_id, indikator, target, satuan, bobot) 
+        VALUES (:template_id, :indikator, :target, :satuan, :bobot)");
+
     $stmt->execute([
         ':template_id' => $param,
-        ':indikator' => $indikator,
-        ':bobot' => $bobot,
-        ':target' => $target
+        ':indikator'   => $_POST['indikator'],
+        ':target'      => $_POST['target'],
+        ':satuan'      => $_POST['satuan'],
+        ':bobot'       => $_POST['bobot'],
     ]);
+
 
 	echo "<script>alert('Item berhasil ditambahkan'); window.location.href='/kpi-app/public/kpi_templates/detail/$param';</script>";
     exit;
+
+if ($bobot <= 0 || $target <= 0 || trim($indikator) === '') {
+    echo "<script>alert('Input tidak valid!'); window.history.back();</script>";
+    exit;
+}
 }
 
 // cek apakah ada request delete
 $subAction = $segments[3] ?? null;   // "delete"
 $subParam  = $segments[4] ?? null;   // id item
 
+// Hitung total bobot semua item dalam template
+$stmt = $pdo->prepare("SELECT COALESCE(SUM(bobot),0) as total 
+                       FROM kpi_item 
+                       WHERE template_id = :template_id");
+$stmt->execute([':template_id' => $param]);
+$totalBobot = (float)$stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+
 if ($subAction === 'delete' && $subParam) {
-    $stmt = $pdo->prepare("DELETE FROM kpi_items WHERE id = :id");
+    $stmt = $pdo->prepare("DELETE FROM kpi_item WHERE id = :id");
     $stmt->execute([':id' => $subParam]);
 
     echo "<script>alert('Item berhasil dihapus'); window.location.href='/kpi-app/public/kpi_templates/detail/$param';</script>";
@@ -64,7 +80,7 @@ if ($subAction === 'delete' && $subParam) {
 }
 
 // GET items dalam template
-$stmt = $pdo->prepare("SELECT * FROM kpi_items WHERE template_id = :template_id ORDER BY id DESC");
+$stmt = $pdo->prepare("SELECT * FROM kpi_item WHERE template_id = :template_id ORDER BY id DESC");
 $stmt->execute([':template_id' => $param]);
 $items = $stmt;
 ?>
@@ -84,9 +100,9 @@ $items = $stmt;
 
     <!-- Detail Template -->
     <div class="mb-6 p-4 border rounded bg-gray-50">
-      <p><strong>Nama Template:</strong> <?= htmlspecialchars($template['nama']); ?></p>
+      <p><strong>Nama Template:</strong> <?= htmlspecialchars($template['nama_template']); ?></p>
       <p><strong>Departemen:</strong> <?= $template['departemen']; ?></p>
-      <p><strong>Periode:</strong> <?= $template['periode']; ?></p>
+      <!--<p><strong>Periode:</strong> <?= $template['periode']; ?></p>-->
       <p><strong>Deskripsi:</strong> <?= htmlspecialchars($template['deskripsi']); ?></p>
     </div>
 
@@ -98,9 +114,10 @@ $items = $stmt;
              class="p-2 border rounded w-full">
       <input type="number" name="target" step="0.01" placeholder="Target" required
              class="p-2 border rounded w-full">
-
+      <input type="text" name="satuan" placeholder="%, unit, hari, Rp" required 
+    		 class="border p-2 w-full">
       <button type="submit" name="add_item"
-              class="bg-green-600 text-white p-2 rounded col-span-1 md:col-span-3">
+             class="bg-green-600 text-white p-2 rounded col-span-1 md:col-span-3">
         Tambah Item
       </button>
     </form>
@@ -109,18 +126,20 @@ $items = $stmt;
     <table class="w-full border text-sm">
       <thead class="bg-gray-200">
         <tr>
-          <th class="border p-2">Indikator</th>
-          <th class="border p-2">Bobot</th>
-          <th class="border p-2">Target</th>
+          <th class="border px-2 py-1">Indikator</th>
+      	  <th class="border px-2 py-1">Target</th>
+      	  <th class="border px-2 py-1">Satuan</th>
+      	  <th class="border px-2 py-1">Bobot</th>
           <th class="border p-2">Aksi</th>
         </tr>
       </thead>
       <tbody>
         <?php while($i = $items->fetch(PDO::FETCH_ASSOC)): ?>
         <tr>
-          <td class="border p-2"><?= htmlspecialchars($i['indikator']); ?></td>
-          <td class="border p-2"><?= $i['bobot']; ?></td>
-          <td class="border p-2"><?= $i['target']; ?></td>
+          <td class="border px-2 py-1"><?= htmlspecialchars($i['indikator']) ?></td>
+          <td class="border px-2 py-1"><?= htmlspecialchars($i['target']) ?></td>
+          <td class="border px-2 py-1"><?= htmlspecialchars($i['satuan']) ?></td>
+          <td class="border px-2 py-1"><?= htmlspecialchars($i['bobot']) ?>%</td>
           <td class="border p-2">          	
           <a href="/kpi-app/public/kpi_templates/detail/<?= $param ?>/delete/<?= $i['id'] ?>"
                onclick="return confirm('Hapus item ini?')"
@@ -130,6 +149,9 @@ $items = $stmt;
         <?php endwhile; ?>
       </tbody>
     </table>
+
+    <p class="mt-4 font-semibold">
+  Total Bobot: <?= $totalBobot; ?>%</p>
 
     <div class="mt-4">
       <a href="/kpi-app/public/kpi_templates" class="bg-gray-600 text-white px-4 py-2 rounded">Kembali</a>

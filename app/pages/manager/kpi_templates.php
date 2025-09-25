@@ -7,25 +7,23 @@ checkRole(['manager']);
 if (isset($_POST['add_template'])) {
     $nama = $_POST['nama'];
     $deskripsi = $_POST['deskripsi'];
-    $periode = $_POST['periode'];
     $departemen_id = $_POST['departemen_id'];
-    //$created_by = $_SESSION['user']['departemen_id'];
+    $created_by = $_SESSION['user']['id'];
 
-    $stmt = $pdo->prepare("INSERT INTO kpi_templates (departemen_id, nama, deskripsi, periode)
-                            VALUES (:departemen_id, :nama, :deskripsi, :periode)");
+    $stmt = $pdo->prepare("INSERT INTO kpi_template (departemen_id, nama_template, deskripsi, dibuat_oleh)
+                            VALUES (:departemen_id, :nama, :deskripsi, :created_by)");
     $stmt->execute([
         ':departemen_id' => $departemen_id,
         ':nama' => $nama,
         ':deskripsi' => $deskripsi,
-        ':periode' => $periode
-        //':created_by' => $created_by
+        ':created_by' => $created_by
     ]);
     header("Location: kpi_templates");
     exit;
 }
 
 if ($action === 'delete' && $param) {
-    $stmt = $pdo->prepare("DELETE FROM kpi_templates WHERE id = :id");
+    $stmt = $pdo->prepare("DELETE FROM kpi_template WHERE id = :id");
     $stmt->execute([':id' => $param]);
 
   echo "<script>alert('Template berhasil dihapus'); window.location.href='/kpi-app/public/kpi_templates';</script>";
@@ -35,7 +33,7 @@ if ($action === 'delete' && $param) {
 $departemen = $pdo->query("SELECT * FROM departments");
 
 $templates = $pdo->query("SELECT t.*, d.name AS departemen 
-                           FROM kpi_templates t 
+                           FROM kpi_template t 
                            LEFT JOIN departments d ON t.departemen_id = d.id
                            ORDER BY t.created_at DESC");
 ?>
@@ -57,9 +55,6 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
     <form method="POST" class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
       <input type="text" name="nama" placeholder="Nama Template" required
              class="p-2 border rounded w-full">
-      <input type="text" name="periode" placeholder="Periode (Tahun)" required
-             class="p-2 border rounded w-full">
-
       <textarea name="deskripsi" placeholder="Deskripsi"
                 class="p-2 border rounded w-full col-span-1 md:col-span-2"></textarea>
 
@@ -83,7 +78,7 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
         <tr>
           <th class="border p-2">Nama</th>
           <th class="border p-2">Departemen</th>
-          <th class="border p-2">Periode</th>
+          
           <th class="border p-2">Deskripsi</th>
           <th class="border p-2">Aksi</th>
         </tr>
@@ -91,9 +86,9 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
       <tbody>
         <?php while($t = $templates->fetch(PDO::FETCH_ASSOC)): ?>
         <tr>
-          <td class="border p-2"><?= htmlspecialchars($t['nama']); ?></td>
+          <td class="border p-2"><?= htmlspecialchars($t['nama_template']); ?></td>
           <td class="border p-2"><?= $t['departemen']; ?></td>
-          <td class="border p-2"><?= $t['periode']; ?></td>
+          
           <td class="border p-2"><?= htmlspecialchars($t['deskripsi']); ?></td>
           <td class="border p-2">
   			<div class="flex flex-col sm:flex-row gap-2">
