@@ -21,6 +21,8 @@ if (isset($_POST['add_item'])) {
     $indikator = $_POST['indikator'];
     $bobot = (float)$_POST['bobot'];
     $target = $_POST['target'];
+    $satuan = $_POST['satuan'];
+    $tipe = $_POST['tipe'];
 
     // Hitung total bobot yang sudah ada
     $stmt = $pdo->prepare("SELECT COALESCE(SUM(bobot),0) as total 
@@ -38,15 +40,16 @@ if (isset($_POST['add_item'])) {
     }
 
     $stmt = $pdo->prepare("INSERT INTO kpi_item 
-        (template_id, indikator, target, satuan, bobot) 
-        VALUES (:template_id, :indikator, :target, :satuan, :bobot)");
+        (template_id, indikator, target, satuan, bobot, tipe) 
+        VALUES (:template_id, :indikator, :target, :satuan, :bobot, :tipe)");
 
     $stmt->execute([
-        ':template_id' => $param,
-        ':indikator'   => $_POST['indikator'],
-        ':target'      => $_POST['target'],
-        ':satuan'      => $_POST['satuan'],
-        ':bobot'       => $_POST['bobot'],
+        ':template_id'	=> $param,
+        ':indikator'	=> $indikator,
+        ':target'		=> $target,
+        ':satuan'		=> $satuan,
+        ':bobot'		=> $bobot,
+        ':tipe'			=> $tipe
     ]);
 
 
@@ -116,6 +119,10 @@ $items = $stmt;
              class="p-2 border rounded w-full">
       <input type="text" name="satuan" placeholder="%, unit, hari, Rp" required 
     		 class="border p-2 w-full">
+      <select name="tipe" class="p-2 border rounded w-full" required>
+    	<option value="normal">Normal (lebih besar lebih baik)</option>
+    	<option value="inverse">Inverse (lebih kecil lebih baik)</option>
+  	  </select>
       <button type="submit" name="add_item"
              class="bg-green-600 text-white p-2 rounded col-span-1 md:col-span-3">
         Tambah Item
@@ -130,6 +137,7 @@ $items = $stmt;
       	  <th class="border px-2 py-1">Target</th>
       	  <th class="border px-2 py-1">Satuan</th>
       	  <th class="border px-2 py-1">Bobot</th>
+      	  <th class="border px-2 py-1">Tipe</th>
           <th class="border p-2">Aksi</th>
         </tr>
       </thead>
@@ -140,6 +148,7 @@ $items = $stmt;
           <td class="border px-2 py-1"><?= htmlspecialchars($i['target']) ?></td>
           <td class="border px-2 py-1"><?= htmlspecialchars($i['satuan']) ?></td>
           <td class="border px-2 py-1"><?= htmlspecialchars($i['bobot']) ?>%</td>
+          <td class="border px-2 py-1"><?= htmlspecialchars($i['tipe']) ?></td>
           <td class="border p-2">          	
           <a href="/kpi-app/public/kpi_templates/detail/<?= $param ?>/delete/<?= $i['id'] ?>"
                onclick="return confirm('Hapus item ini?')"

@@ -3,8 +3,8 @@ require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
 // ambil detail assignment & template
-$sql = "SELECT a.id AS assignment_id, a.user_id, t.id AS template_id, t.nama_template, t.deskripsi
-        FROM kpi_assignment a
+$sql = "SELECT a.id AS assignment_id, a.user_id AS user_id, t.id AS template_id, t.nama_template, t.deskripsi
+        FROM kpi_user a
         JOIN kpi_template t ON a.template_id = t.id
         WHERE a.id = :aid";
 $stmt = $pdo->prepare($sql);
@@ -37,7 +37,8 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
     <p class="text-l mb-6">(CAN ONLY BE FILLED ONCE)</p>
     <form action="/kpi-app/public/my_kpi/save" method="post" enctype="multipart/form-data" class="space-y-4">
         <input type="hidden" name="assignment_id" value="<?= $assignment['assignment_id'] ?>">
-
+        <input type="hidden" name="user_id" value="<?= $assignment['user_id'] ?>">
+        <input type="hidden" name="template_id" value="<?= $assignment['template_id'] ?>">
         <div class="overflow-x-auto">
         <table class="w-full border border-gray-300 text-sm">
             <thead class="bg-gray-100">
@@ -47,7 +48,6 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
                     <th class="border px-2 py-1">Satuan</th>
                     <th class="border px-2 py-1">Bobot</th>
                     <th class="border px-2 py-1">Realisasi</th>
-                    <th class="border px-2 py-1">Keterangan</th>
                     <th class="border px-2 py-1">Evidence</th>
                 </tr>
             </thead>
@@ -59,26 +59,20 @@ $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
                     <td class="border px-2 py-1 text-center"><?= htmlspecialchars($item['satuan']) ?></td>
                     <td class="border px-2 py-1 text-center"><?= htmlspecialchars($item['bobot']) ?>%</td>
                     <td class="border px-2 py-1">
-                            <input type="number" step="0.01" name="realisasi[<?= $item['id'] ?>]" 
-                                   class="border rounded p-1 w-full">
-                        </td>
-                        <td class="border px-2 py-1">
-                            <textarea name="keterangan[<?= $item['id'] ?>]" 
-                                      class="border rounded p-1 w-full" rows="2"></textarea>
-                        </td>
-                        <td class="border px-2 py-1">
-                            <input type="file" name="evidence[<?= $item['id'] ?>]" class="text-sm">
-                        </td>
+                        <input type="number" step="0.01" name="realisasi[<?= $item['id'] ?>]" class="border rounded p-1 w-full">
+                    </td>
+                    <td class="border px-2 py-1">
+                        <input type="file" name="evidence[<?= $item['id'] ?>]" class="text-sm">
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
     </div>
 
-        <button type="submit" 
-                class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-            Simpan Realisasi
-        </button>
+    <button type="submit" 
+        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Simpan Realisasi
+    </button>
     </form>
     <div class="mt-4">
     <a href="/kpi-app/public/my_kpi" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Kembali</a>
@@ -94,14 +88,6 @@ document.getElementById('kpiForm').addEventListener('submit', function(e) {
         if (el.value.trim() === "") {
             valid = false;
             messages.push("Semua nilai realisasi harus diisi.");
-        }
-    });
-
-    // cek semua textarea keterangan
-    document.querySelectorAll('textarea[name^="keterangan"]').forEach(el => {
-        if (el.value.trim() === "") {
-            valid = false;
-            messages.push("Semua keterangan harus diisi.");
         }
     });
 

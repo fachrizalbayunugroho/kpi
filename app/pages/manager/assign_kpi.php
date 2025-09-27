@@ -2,6 +2,9 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
+$tahun = 2025;
+$bulan = 9;
+
 // Ambil data template
 if ($action === 'assign' && $param) {
 $stmt = $pdo->prepare("SELECT t.*, d.name AS departemen 
@@ -29,15 +32,18 @@ if (isset($_POST['assign'])) {
     if (isset($_POST['user_ids'])) {
         foreach ($_POST['user_ids'] as $user_id) {
             // Cek apakah sudah ada assignment
-            $check = $pdo->prepare("SELECT COUNT(*) FROM kpi_assignment 
+            $check = $pdo->prepare("SELECT COUNT(*) FROM kpi_user
                                      WHERE template_id = :tid AND user_id = :uid");
             $check->execute([':tid' => $param, ':uid' => $user_id]);
             $exists = $check->fetchColumn();
 
             if (!$exists) {
-                $stmt = $pdo->prepare("INSERT INTO kpi_assignment (template_id, user_id, assigned_at)
-                                        VALUES (:tid, :uid, NOW())");
-                $stmt->execute([':tid' => $param, ':uid' => $user_id]);
+                $stmt = $pdo->prepare("INSERT INTO kpi_user (template_id, user_id, tahun, bulan, assigned_at)
+                                        VALUES (:tid, :uid, :tahun, :bulan, NOW())");
+                $stmt->execute([':tid' => $param, 
+                				':uid' => $user_id,
+                				':tahun' => $tahun,
+                				':bulan' => $bulan]);
             }
         }
     }
@@ -46,7 +52,7 @@ if (isset($_POST['assign'])) {
 }
 
 // Ambil user yang sudah diassign
-$stmt = $pdo->prepare("SELECT u.* FROM kpi_assignment a
+$stmt = $pdo->prepare("SELECT u.* FROM kpi_user a
                         JOIN users u ON a.user_id = u.id
                         WHERE a.template_id = :tid");
 $stmt->execute([':tid' => $param]);

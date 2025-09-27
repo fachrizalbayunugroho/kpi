@@ -2,36 +2,51 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
 
-//if (!isset($_GET['user_id'])) {
-    //die("User tidak ditemukan.");
-//}
-$user_id = $param;
+$assignmentId = $param;
 
-// ambil info user
-$sqlUser = "SELECT u.id, u.nama, d.name as dept
-            FROM users u
-            JOIN departments d ON u.departemen_id = d.id
-            WHERE u.id = :uid";
-$stmtUser = $pdo->prepare($sqlUser);
-$stmtUser->execute([':uid' => $user_id]);
-$user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+// ambil info assignment termasuk template_id dan user_id
+$sql = "SELECT ku.id AS assignment_id, ku.user_id, u.nama AS user_nama,
+               t.id AS template_id, t.nama_template AS nama_template, d.name AS departemen
+        FROM kpi_user ku
+        JOIN users u ON ku.user_id = u.id
+        JOIN kpi_template t ON ku.template_id = t.id
+        LEFT JOIN departments d ON t.departemen_id = d.id
+        WHERE ku.id = :aid";
 
-if (!$user) {
-    die("Data user tidak ditemukan.");
+$stmt = $pdo->prepare($sql);
+$stmt->execute([':aid' => $assignmentId]);
+$assignment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$assignment) {
+    die("Assignment tidak ditemukan!");
 }
+
+$template_id = $assignment['template_id'];
+$user_id     = $assignment['user_id'];
 
 // ambil data KPI detail (assignment + item + realisasi)
 if ($action === 'detail' && $param) {
-$sql = "SELECT i.id as item_id, i.indikator, i.target, i.bobot, i.satuan,
-               r.realisasi, r.keterangan, r.evidence
-        FROM kpi_assignment a
-        JOIN kpi_item i ON i.template_id = a.template_id
-        LEFT JOIN kpi_user r ON r.assignment_id = a.id AND r.item_id = i.id
-        WHERE a.user_id = :uid";
+$sql = "SELECT i.indikator, i.target, i.bobot, i.satuan, i.tipe,
+               r.realisasi, r.evidence,
+               CASE 
+                 WHEN r.realisasi IS NULL OR r.realisasi = 0 THEN 0
+                 WHEN i.tipe = 'inverse' 
+                      THEN (i.target / r.realisasi) * i.bobot
+                 ELSE (r.realisasi / i.target) * i.bobot
+               END AS skor_akhir
+        FROM kpi_item i
+        LEFT JOIN kpi_realisasi r 
+               ON r.item_id = i.id AND r.assignment_id = :aid
+        WHERE i.template_id = :tid";
+
 $stmt = $pdo->prepare($sql);
-$stmt->execute([':uid' => $user_id]);
+$stmt->execute([
+    ':aid' => $assignmentId,
+    ':tid' => $template_id
+]);
 $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -42,9 +57,9 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="bg-gray-100 p-6">
 <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
-  <h1 class="text-2xl font-bold mb-2">Detail KPI: <?= htmlspecialchars($user['nama']) ?></h1>
-  <p class="text-gray-600 mb-4">Departemen: <?= htmlspecialchars($user['dept']) ?></p>
-
+  <h1 class="text-2xl font-bold mb-2">Detail KPI: <?= htmlspecialchars($assignment['user_nama']) ?></h1>
+  <p class="text-l font-bold mb-2">Departemen: <?= htmlspecialchars($assignment['departemen']) ?></p>
+  <p class="text-l font-bold mb-4">Nama template KPI: <?= htmlspecialchars($assignment['nama_template']) ?></p>
   <div class="overflow-x-auto">
     <table class="min-w-full border text-sm">
       <thead class="bg-gray-100">
@@ -54,7 +69,6 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <th class="border px-2 py-1">Satuan</th>
           <th class="border px-2 py-1">Bobot</th>
           <th class="border px-2 py-1">Realisasi</th>
-          <th class="border px-2 py-1">Keterangan</th>
           <th class="border px-2 py-1">Evidence</th>
           <th class="border px-2 py-1">Skor</th>
         </tr>
@@ -66,11 +80,6 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($items as $row): 
             $totalBobot += $row['bobot'];
-            $skor = 0;
-            if ($row['target'] > 0 && $row['realisasi'] !== null) {
-                $skor = ($row['realisasi'] / $row['target']) * $row['bobot'];
-            }
-            $totalSkor += $skor;
         ?>
         <tr>
           <td class="border px-2 py-1"><?= htmlspecialchars($row['indikator']) ?></td>
@@ -78,7 +87,6 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['satuan']) ?></td>
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['bobot']) ?>%</td>
           <td class="border px-2 py-1 text-center"><?= htmlspecialchars($row['realisasi'] ?? '-') ?></td>
-          <td class="border px-2 py-1"><?= htmlspecialchars($row['keterangan'] ?? '-') ?></td>
           <td class="border px-2 py-1 text-center">
             <?php if ($row['evidence']): ?>
               <a href="<?= htmlspecialchars($row['evidence']) ?>" target="_blank" 
@@ -87,15 +95,16 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
               -
             <?php endif; ?>
           </td>
-          <td class="border px-2 py-1 text-center"><?= round($skor, 2) ?></td>
+          <td class="border px-2 py-1 text-center"><?= round($row['skor_akhir'], 2) ?></td>
         </tr>
+        <?php $totalSkor += $row['skor_akhir']; ?>
         <?php endforeach; ?>
       </tbody>
       <tfoot class="bg-gray-50 font-bold">
         <tr>
-          <td class="border px-2 py-1 text-right" colspan="3">Total</td>
+          <td class="border px-2 py-1 text-center" colspan="3">Total</td>
           <td class="border px-2 py-1 text-center"><?= $totalBobot ?>%</td>
-          <td class="border px-2 py-1 text-center" colspan="3">Skor Akhir</td>
+          <td class="border px-2 py-1 text-center" colspan="2">Skor Akhir</td>
           <td class="border px-2 py-1 text-center"><?= round($totalSkor, 2) ?></td>
         </tr>
       </tfoot>

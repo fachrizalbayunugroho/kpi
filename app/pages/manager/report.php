@@ -5,20 +5,29 @@ require_once __DIR__ . '/../../core/auth.php';
 $managerDept = $_SESSION['user']['departemen_id'];
 
 // ambil laporan per user di departemen manager
-$sql = "SELECT u.id as user_id, u.nama as user_nama, d.name as dept_nama,
-               SUM(i.bobot) as total_bobot,
-               SUM( (r.realisasi / NULLIF(i.target,0)) * i.bobot ) as skor
-        FROM users u
+$sql = "SELECT u.id as user_id, u.nama as user_name, r.assignment_id as assignment_id,
+               t.id as template_id, t.nama_template, d.name AS departemen, ROUND(SUM(CASE 
+            WHEN i.tipe = 'normal' AND r.realisasi IS NOT NULL AND i.target > 0
+                THEN (r.realisasi / i.target) * i.bobot
+            WHEN i.tipe = 'inverse' AND r.realisasi IS NOT NULL AND r.realisasi > 0
+                THEN (i.target / r.realisasi) * i.bobot
+            ELSE 0
+        END), 2) AS skor_akhir
+        FROM kpi_user ku
+        JOIN users u ON ku.user_id = u.id
+        JOIN kpi_template t ON ku.template_id = t.id
+        JOIN kpi_item i ON i.template_id = t.id
+        LEFT JOIN kpi_realisasi r 
+            ON r.item_id = i.id AND r.user_id = u.id AND r.template_id = t.id
         JOIN departments d ON u.departemen_id = d.id
-        JOIN kpi_assignment a ON a.user_id = u.id
-        JOIN kpi_item i ON i.template_id = a.template_id
-        LEFT JOIN kpi_user r ON r.assignment_id = a.id AND r.item_id = i.id
-        WHERE d.id = :dept
-        GROUP BY u.id";
+    	WHERE d.id = :dept
+        GROUP BY u.id, t.id
+        ORDER BY u.nama, t.nama_template";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([':dept' => $managerDept]);
 $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,38 +37,29 @@ $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="bg-gray-100 p-6">
 <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
-  <h1 class="text-2xl font-bold mb-4">Laporan KPI Departemen <?= $laporan[0]['dept_nama'] ?? '' ?></h1>
+  <h1 class="text-2xl font-bold mb-4">Laporan KPI</h1>
 
   <div class="overflow-x-auto">
-    <table class="min-w-full border text-sm">
-      <thead class="bg-gray-100">
+    <table class="w-full border text-sm">
+      <thead class="bg-gray-200">
         <tr>
-          <th class="border px-2 py-1">Nama User</th>
-          <th class="border px-2 py-1">Total Bobot</th>
-          <th class="border px-2 py-1">Skor Akhir</th>
-          <th class="border px-2 py-1">Progress</th>
-          <th class="border px-2 py-1">Aksi</th>
+          <th class="border p-2">Nama User</th>
+          <th class="border p-2">Departemen</th>
+          <th class="border p-2">Template</th>
+          <th class="border p-2">Skor Akhir</th>
+          <th class="border p-2">Aksi</th>
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($laporan as $row): 
-          $total = $row['total_bobot'] ?: 0;
-          $skor = $row['skor'] ?: 0;
-          $persen = $total > 0 ? round(($skor / $total) * 100, 2) : 0;
-        ?>
+        <?php foreach($laporan as $row): ?>
         <tr>
-          <td class="border px-2 py-1"><?= htmlspecialchars($row['user_nama']) ?></td>
-          <td class="border px-2 py-1 text-center"><?= $total ?>%</td>
-          <td class="border px-2 py-1 text-center"><?= round($skor,2) ?></td>
-          <td class="border px-2 py-1 w-48">
-            <div class="w-full bg-gray-200 rounded-full h-4">
-              <div class="bg-blue-500 h-4 rounded-full" style="width: <?= $persen ?>%;"></div>
-            </div>
-            <p class="text-xs text-gray-600 mt-1"><?= $persen ?>%</p>
-          </td>
-          <td class="border px-2 py-1 text-center">
-          	<a href="/kpi-app/public/report/detail/<?= $row['user_id'] ?>"
-               class="bg-blue-500 text-white px-2 py-1 rounded">Detail</a>
+          <td class="border p-2"><?= htmlspecialchars($row['user_name']); ?></td>
+          <td class="border p-2"><?= htmlspecialchars($row['departemen']); ?></td>
+          <td class="border p-2"><?= htmlspecialchars($row['nama_template']); ?></td>
+          <td class="border p-2 font-bold"><?= round($row['skor_akhir'],2); ?></td>
+          <td class="border p-2">
+            <a href="/kpi-app/public/report/detail/<?= $row['assignment_id'] ?>" 
+               class="bg-blue-500 text-white px-3 py-1 rounded">Detail</a>
           </td>
         </tr>
         <?php endforeach; ?>

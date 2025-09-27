@@ -23,12 +23,26 @@ if (isset($_POST['add_template'])) {
 }
 
 if ($action === 'delete' && $param) {
+    // cek apakah template punya item
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM kpi_item WHERE template_id = :id");
+    $stmt->execute([':id' => $param]);
+    $jml = $stmt->fetchColumn();
+
+    if ($jml > 0) {
+        echo "<script>alert('Template memiliki item, tidak bisa dihapus!'); 
+              window.location.href='/kpi-app/public/kpi_templates';</script>";
+        exit;
+    }
+
+    // jika kosong, lanjut hapus
     $stmt = $pdo->prepare("DELETE FROM kpi_template WHERE id = :id");
     $stmt->execute([':id' => $param]);
 
-  echo "<script>alert('Template berhasil dihapus'); window.location.href='/kpi-app/public/kpi_templates';</script>";
-  exit;
+    echo "<script>alert('Template berhasil dihapus'); 
+          window.location.href='/kpi-app/public/kpi_templates';</script>";
+    exit;
 }
+
 
 $departemen = $pdo->query("SELECT * FROM departments");
 

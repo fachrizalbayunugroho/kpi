@@ -7,6 +7,7 @@ if (!isset($_SESSION['user'])) {
 
 $user = $_SESSION['user'];
 $role = $user['role'];
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
