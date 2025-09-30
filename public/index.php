@@ -57,6 +57,10 @@ switch ($page) {
         require __DIR__ . '/../app/pages/logout.php';
         break;
 
+    case 'change_password':
+        require __DIR__ . '/../app/pages/change_password.php';
+        break;
+
     case 'dashboard':
         require __DIR__ . '/../app/pages/dashboard.php';
         break;
