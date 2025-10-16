@@ -1,6 +1,9 @@
 <?php
+$page_title = "Template KPI";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 checkRole(['manager']);
 
@@ -51,17 +54,7 @@ $templates = $pdo->query("SELECT t.*, d.name AS departemen
                            LEFT JOIN departments d ON t.departemen_id = d.id
                            ORDER BY t.created_at DESC");
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Template KPI</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow">
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow mt-4">
 
     <h1 class="text-2xl font-bold mb-4">Template KPI</h1>
 

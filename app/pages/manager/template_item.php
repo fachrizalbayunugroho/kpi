@@ -1,6 +1,9 @@
 <?php
+$page_title = "Item Template KPI";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 // GET data template
 if ($action === 'detail' && $param) {
@@ -88,16 +91,7 @@ $stmt->execute([':template_id' => $param]);
 $items = $stmt;
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Item Template KPI</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow">
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow mt-4">
 
     <h1 class="text-2xl font-bold mb-4">Item Template KPI</h1>
 

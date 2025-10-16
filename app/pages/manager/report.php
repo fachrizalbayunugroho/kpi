@@ -1,6 +1,9 @@
 <?php
+$page_title = "Laporan KPI Departemen";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 $managerDept = $_SESSION['user']['departemen_id'];
 
@@ -28,15 +31,7 @@ $stmt->execute([':dept' => $managerDept]);
 $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Laporan KPI Departemen</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body class="bg-gray-100 p-6">
-<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow mt-4">
   <h1 class="text-2xl font-bold mb-4">Laporan KPI</h1>
 
   <div class="overflow-x-auto">
@@ -59,7 +54,7 @@ $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <td class="border p-2 font-bold"><?= round($row['skor_akhir'],2); ?></td>
           <td class="border p-2">
             <a href="/kpi-app/public/report/detail/<?= $row['assignment_id'] ?>" 
-               class="bg-blue-500 text-white px-3 py-1 rounded">Detail</a>
+               class="bg-blue-500 text-white px-3 py-1 rounded" onclick="return checkAssignment(this)">Detail</a>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -72,5 +67,14 @@ $laporan = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </a>
   </div>
 </div>
+<script>
+function checkAssignment(el) {
+    if (!el.getAttribute('href') || el.getAttribute('href').endsWith('/')) {
+        alert('ID assignment belum tersedia!');
+        return false; // cegah pindah halaman
+    }
+    return true;
+}
+</script>
 </body>
 </html>

@@ -1,6 +1,9 @@
 <?php
+$page_title = "Laporan Detail KPI";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 $assignmentId = $param;
 
@@ -48,15 +51,8 @@ $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Laporan Detail KPI</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body class="bg-gray-100 p-6">
-<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow mt-4">
   <h1 class="text-2xl font-bold mb-2">Detail KPI: <?= htmlspecialchars($assignment['user_nama']) ?></h1>
   <p class="text-l font-bold mb-2">Departemen: <?= htmlspecialchars($assignment['departemen']) ?></p>
   <p class="text-l font-bold mb-4">Nama template KPI: <?= htmlspecialchars($assignment['nama_template']) ?></p>

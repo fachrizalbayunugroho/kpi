@@ -1,6 +1,9 @@
 <?php
+$page_title = "Manajemen Departemen";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 // Hanya admin yang boleh akses
 checkRole(['admin']);
@@ -29,19 +32,8 @@ if ($action === 'delete' && $param) {
 $stmt = $pdo->query("SELECT * FROM departments ORDER BY id DESC");
 $departments = $stmt->fetchAll();
 ?>
-
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Departemen</title>
-    <link rel="stylesheet" href="/kpi-app/src/output.css">
-</head>
-<body class="bg-gray-100 min-h-screen p-6">
-
-    <h1 class="text-2xl font-bold mb-4">📂 Manajemen Departemen</h1>
-
+<h1 class="text-2xl font-bold text-center mt-4 mb-6">Manajemen Departemen</h1>
+<div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow">
     <!-- Form tambah departemen -->
     <form method="POST" class="mb-6 flex gap-2">
         <input type="text" name="name" placeholder="Nama Departemen"
@@ -53,7 +45,6 @@ $departments = $stmt->fetchAll();
     </form>
 
     <!-- Tabel daftar departemen -->
-    <div class="bg-white shadow rounded-lg p-4">
         <table class="w-full border-collapse">
             <thead>
                 <tr class="bg-gray-200 text-left">
@@ -83,7 +74,6 @@ $departments = $stmt->fetchAll();
                 <?php endif; ?>
             </tbody>
         </table>
-    </div>
 
     <!-- Tombol kembali -->
     <div class="mt-4">
@@ -91,6 +81,6 @@ $departments = $stmt->fetchAll();
             ⬅ Kembali ke Dashboard
         </a>
     </div>
-
+</div>
 </body>
 </html>

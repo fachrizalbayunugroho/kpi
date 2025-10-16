@@ -1,6 +1,9 @@
 <?php
+$page_title = "Manajemen User";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
+include_once __DIR__ . '/../include/header.php';
 
 // Hanya admin yang boleh akses
 checkRole(['admin']);
@@ -75,16 +78,7 @@ $totalPages = ceil($total / $limit);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manajemen User</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-</head>
-<body class="bg-gray-100 p-6">
-	 <h1 class="text-2xl font-bold mb-4">Manajemen User</h1>
+ <h1 class="text-2xl font-bold text-center mt-4 mb-6">Manajemen User</h1>
   <div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow">  
 
     <!-- Form Tambah User -->

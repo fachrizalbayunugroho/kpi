@@ -1,7 +1,9 @@
 <?php
+$page_title = "Assign KPI ke User";
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/auth.php';
-
+include_once __DIR__ . '/../include/header.php';
 $tahun = 2025;
 $bulan = 9;
 
@@ -58,17 +60,7 @@ $stmt = $pdo->prepare("SELECT u.* FROM kpi_user a
 $stmt->execute([':tid' => $param]);
 $assigned_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assign KPI ke User</title>
-  <link rel="stylesheet" href="/kpi-app/src/output.css">
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow mt-4">
 
     <h1 class="text-2xl font-bold mb-4">Assign KPI ke User</h1>
 

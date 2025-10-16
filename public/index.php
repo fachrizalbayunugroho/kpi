@@ -12,7 +12,7 @@ require __DIR__ . '/../app/config/database.php';
 require __DIR__ . '/../app/core/auth.php';
 
 $requestUri = $_SERVER['REQUEST_URI'];
-$basePath   = '/kpi-app/public'; // sesuaikan dengan folder project kamu
+$basePath   = '/kpi-app/public'; 
 $path       = str_replace($basePath, '', $requestUri);
 $segments   = array_values(array_filter(explode('/', $path)));
 
